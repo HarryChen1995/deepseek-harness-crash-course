@@ -1,0 +1,14 @@
+# Lesson 09 — three rows, one capability.
+#
+# Note there is NO row for service.ts. A Definition is just a module that the
+# provider imports; it is not mounted on its own. Only the Provider and the
+# Consumer are plugins.
+#
+# EXPERIMENT: swap these two rows' order. Nothing changes — activation is driven
+# by service availability (`inject`), not by file order.
+- insert:
+    - id: lesson-09-quote-provider
+      name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/09-services-and-seams/provider.ts'
+
+    - id: lesson-09-quote-consumer
+      name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/09-services-and-seams/consumer.ts'

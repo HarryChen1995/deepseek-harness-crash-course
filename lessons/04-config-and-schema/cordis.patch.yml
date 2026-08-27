@@ -1,0 +1,16 @@
+# Lesson 04 — note the `config:` block. Cordis validates this against the
+# plugin's exported Config schema, fills defaults for anything omitted, and
+# passes the result to apply(ctx, config).
+#
+# Experiments to run:
+#   * delete `mode` -> the default 'quiet' is filled in
+#   * set `times: 99` -> the load FAILS (max is 5) and dsh exits non-zero
+#   * set `times: 'three'` -> fails too: wrong type
+- insert:
+    - id: lesson-04-config
+      name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/04-config-and-schema/plugin.ts'
+      config:
+        greeting: 'Hei'
+        times: 2
+        mode: loud
+        names: ['Ada', 'Linus']

@@ -1,0 +1,23 @@
+# The capstone's patch layer. It does BOTH things the course taught separately:
+#
+#   row 1  a native Cordis tool plugin  (lessons 02-09)
+#   row 2  a custom MCP server bridged in via dsh-mcp-client  (lesson 12)
+#
+# This same file is what `dsh plugin add` would activate if you packaged this
+# directory as a bundle (lesson 14) — except a real bundle's rows name the
+# PACKAGE, not absolute paths.
+- insert:
+    - id: dsh-course-capstone-tools
+      name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/capstone/index.ts'
+
+    - id: dsh-course-capstone-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: dsh_custom_mock
+        transport: stdio
+        # The child process does not inherit the harness's tsx loader, so we
+        # invoke the course's own tsx binary directly.
+        command: '/Users/hanlinchen/Desktop/dsh-custom-plugin/node_modules/.bin/tsx'
+        args: ['/Users/hanlinchen/Desktop/dsh-custom-plugin/capstone/mcp-server/index.ts']
+        cwd: '/Users/hanlinchen/Desktop/dsh-custom-plugin/capstone/mcp-server'
+        env: {}

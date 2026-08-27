@@ -1,0 +1,69 @@
+# Lesson 12 — composition. This file is the lesson; there is no plugin.ts.
+#
+# A patch file is a top-level YAML ARRAY of patch entries. There are exactly two
+# kinds of entry, and the difference is whether it has `insert`.
+
+# ---------------------------------------------------------------------------
+# KIND 1: insert — add new rows.
+# ---------------------------------------------------------------------------
+- insert:
+    # Always give a row an explicit `id`. A row without one gets a generated id
+    # on every read, so ANY edit to this file makes the loader think the row was
+    # removed and re-added — and it remounts needlessly.
+    - id: lesson-12-demo-tool
+      name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/05-your-first-tool/plugin.ts'
+
+# ---------------------------------------------------------------------------
+# KIND 2: id-targeted patch — modify a row that an EARLIER layer created.
+# ---------------------------------------------------------------------------
+# Because `id` is the key, you can reach into the shipped harness composition
+# and change it without forking anything. Here we retune a bundled row.
+#
+# THE CRITICAL RULE: an id-targeted patch REPLACES the row's entire `config`.
+# There is no deep merge. If the original row set five keys and you patch one,
+# the other four are GONE — you must restate every key you want to keep.
+#
+# (Commented out because the right values depend on your dsh version. Run
+#  `dsh --profile web --dump-default-config` to see a row's real config first,
+#  then copy it here in full before changing one field.)
+#
+# - id: agent-presets
+#   config:
+#     default: standard        # <- restate every key the row needs, not just this one
+
+# ---------------------------------------------------------------------------
+# Disabling a shipped row.
+# ---------------------------------------------------------------------------
+# `disabled: true` keeps the row in the tree but does not mount it (nor its
+# descendants). This is how you turn a built-in capability off.
+#
+# - id: hmr
+#   disabled: true
+
+# ---------------------------------------------------------------------------
+# !!js expressions — computed config.
+# ---------------------------------------------------------------------------
+# `!!js <expr>` (two bangs) is parsed into an expression node and evaluated by
+# the loader. Allowed ONLY in `config` (at any depth) and in `disabled`. In
+# `id`, `name`, `inject`, `group`, `isolate` it is inert data that silently
+# changes nothing — a real footgun.
+#
+# In scope: `ctx` (and any injected service as ctx.<name>), `process`, and the
+# boot-provided dshHomePath(...segments).
+#
+# Timing: `config` is interpolated ONCE when the row activates, after its
+# injected services exist. `disabled` re-evaluates at every mount decision.
+#
+# Real examples from the shipped base bundle:
+#
+#   config:
+#     root: !!js dshHomePath('sessions')
+#     workspaceRoot: !!js process.cwd()
+#     mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'
+#   disabled: !!js process.platform === 'win32'
+#
+# Quote the scalar when YAML would otherwise mangle it:
+#   policy: !!js "(process.env.MODE ?? 'a') === 'b' ? 'never' : 'ask'"
+#
+# Note: `!!js` is eval with `with(ctx)`. A patch file is executable code —
+# treat one you did not write with the same suspicion as a shell script.

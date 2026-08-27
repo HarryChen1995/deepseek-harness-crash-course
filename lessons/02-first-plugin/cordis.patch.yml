@@ -1,0 +1,15 @@
+# Lesson 02 — the patch overlay that loads plugin.ts.
+#
+# A patch file is a top-level YAML ARRAY of patch entries. `insert` adds new
+# plugin rows to the composed tree. Each row is:
+#
+#   id      a stable identifier for this row, unique within the tree. Later
+#           layers target a row BY ID to override or disable it (lesson 12).
+#   name    what to load: an absolute/relative module path, or a package name.
+#   config  (optional) the config object handed to apply(ctx, config).
+#
+# Paths here are absolute because a patch may be applied from any working
+# directory. Adjust if you cloned this course somewhere else.
+- insert:
+    - id: lesson-02-first-plugin
+      name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/02-first-plugin/plugin.ts'

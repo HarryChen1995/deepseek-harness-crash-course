@@ -1,0 +1,12 @@
+{
+  "name": "dsh-lesson-bundle",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.ts",
+  "files": ["index.ts", "cordis.patch.yml"],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

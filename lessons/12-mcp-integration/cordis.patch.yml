@@ -1,0 +1,91 @@
+# Lesson 12 — MCP integration.
+#
+# There is no plugin.ts here either. dsh has NO "MCP server manifest" concept.
+# An MCP server is just another plugin row, using the shipped bridge plugin
+# @deepseek-ai/dsh-mcp-client. One row == one MCP server. Want three servers?
+# Three rows, each with a unique `id` AND a unique `serverName`.
+#
+# This lesson connects the course's own mock MCP server (../../capstone/mcp-server).
+- insert:
+    - id: lesson-12-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        # --- required ---
+        # Namespace for this server's tools. Pattern: /^[A-Za-z0-9_-]{1,32}$/
+        # Must be unique across live instances — a duplicate fails the LATER
+        # plugin instance at load and leaves the earlier one running.
+        serverName: lesson_mcp
+
+        transport: stdio          # 'stdio' | 'streamable-http'
+
+        # stdio only. Spawned directly — NO shell interpolation, so you cannot
+        # write "node foo.ts | grep bar" here. We point at the course's local tsx
+        # binary because the child is a separate process and does NOT inherit the
+        # harness's own tsx loader.
+        command: '/Users/hanlinchen/Desktop/dsh-custom-plugin/node_modules/.bin/tsx'
+        args: ['/Users/hanlinchen/Desktop/dsh-custom-plugin/capstone/mcp-server/index.ts']
+
+        # --- optional, defaults shown ---
+        cwd: '/Users/hanlinchen/Desktop/dsh-custom-plugin/capstone/mcp-server'
+
+        # Extra env, merged ON TOP of the scrubbed parent env. See the scrubbing
+        # note below — this is the only way to pass a secret through.
+        env: {}
+
+        # toolCallTimeoutMs: 60000     # per callTool invocation
+        # failOnStartupError: false    # true = refuse to activate if connect fails
+        # reconnect:
+        #   enabled: true              # reconnect after a lost connection
+        #   initialDelayMs: 500        # doubles per consecutive failure
+        #   maxDelayMs: 30000          # also: uptime after which the budget resets
+        #   maxAttempts: 10            # consecutive failures per outage, then
+        #                              # tools are UNREGISTERED until a restart
+
+# ---------------------------------------------------------------------------
+# A remote server instead
+# ---------------------------------------------------------------------------
+# - id: lesson-12-mcp-remote
+#   name: '@deepseek-ai/dsh-mcp-client'
+#   config:
+#     serverName: remote_thing
+#     transport: streamable-http
+#     url: 'http://127.0.0.1:9000/mcp'
+#     headers:
+#       Authorization: !!js '`Bearer ${process.env.MY_MCP_TOKEN}`'
+#
+# ---------------------------------------------------------------------------
+# Tool naming
+# ---------------------------------------------------------------------------
+# Tools arrive as  mcp__<serverName>__<rawName>  — so this lesson's server
+# publishes mcp__lesson_mcp__mcp_echo, mcp__lesson_mcp__mcp_roll_dice,
+# mcp__lesson_mcp__mcp_mock_run.
+#
+# Budget: 64 characters, charset [A-Za-z0-9_-]. If the joined name would exceed
+# that or contain anything else, dsh truncates and appends "_" plus 12 hex chars
+# of a SHA-256 of (serverName, rawName) — so two tools can never collide into one
+# name. Names are a pure function of (serverName, rawName): connection order and
+# re-syncs never rename a tool.
+#
+# ---------------------------------------------------------------------------
+# Environment scrubbing — read this before wondering why your key is missing
+# ---------------------------------------------------------------------------
+# Before spawning a stdio child, dsh strips from the inherited environment:
+#   1. any variable whose NAME matches /KEY|PASSWORD|SECRET|TOKEN/i
+#   2. every DSH_* variable (case-insensitive)
+# So the harness's own DEEPSEEK_API_KEY can never leak into a child implicitly.
+# PATH, HOME, locale and proxy vars survive, so normal CLIs still work.
+#
+# The escape hatch is deliberate: `config.env` merges AFTER the scrub. Forward a
+# secret EXPLICITLY and never ambiently:
+#
+#     env:
+#       GITHUB_TOKEN: !!js process.env.GITHUB_TOKEN
+#
+# ---------------------------------------------------------------------------
+# The limit worth knowing up front
+# ---------------------------------------------------------------------------
+# dsh can only CONSUME MCP servers. It cannot ACT AS one — there is no
+# mcp-server package, and McpServer appears only in test fixtures. If you want to
+# expose dsh's capabilities outward, the seams are ACP (packages/acp), the
+# JSON-RPC SDK (packages/sdk), or the Typert API Gateway (/api, @Remote) — not a
+# plugin. Also: only MCP *tools* are bridged. Resources and Prompts are not.

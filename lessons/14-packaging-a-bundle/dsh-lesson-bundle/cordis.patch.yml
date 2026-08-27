@@ -1,0 +1,7 @@
+# A BUNDLE's own patch layer. Note the difference from every lesson patch so
+# far: `name` is the PACKAGE NAME, not an absolute file path. Once the bundle is
+# installed into a profile, Node resolution finds the code — so the bundle is
+# portable and does not hardcode anyone's home directory.
+- insert:
+    - id: dsh-lesson-bundle-tool
+      name: 'dsh-lesson-bundle'

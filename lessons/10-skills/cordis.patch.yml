@@ -1,0 +1,46 @@
+# Lesson 10 — Skills.
+#
+# There is no plugin.ts in this lesson. A Skill is a MARKDOWN FILE, not code.
+# This patch only has to do two things: turn the skill machinery on, and tell it
+# where to look.
+#
+# ---------------------------------------------------------------------------
+# 1. Re-enable the skill rows.
+# ---------------------------------------------------------------------------
+# Surprise: in the `web` profile, skills are OFF. The dsh-web-app bundle patches
+# `skill-filesystem` and `tool-skill` to disabled:true, because agent presets are
+# meant to own local skill discovery there. Verify it yourself:
+#
+#   dsh --profile web --dump-default-config | grep -A2 'id: tool-skill'
+#
+# `disabled` is a top-level row field, NOT part of `config` — so patching it does
+# not wipe the row's config. That is why these two entries are safe and small.
+- id: skill-filesystem
+  disabled: false
+  # Adding a `config` here DOES replace the row's whole config (lesson 13's rule).
+  # It is safe in this case because every field of skill-filesystem's Config is
+  # either optional or resolved from the environment ($DSH_HOME, $DSH_AGENTS_HOME).
+  config:
+    # Discovery root rank 300. Points at this lesson's skills/ directory, so the
+    # skill stays version-controlled with the course instead of being copied into
+    # your home directory.
+    customSkillDirs:
+      - '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/10-skills/skills'
+
+- id: tool-skill
+  disabled: false
+
+# ---------------------------------------------------------------------------
+# 2. The other discovery roots (lower rank wins)
+# ---------------------------------------------------------------------------
+#   100  <projectRoot>/.dsh/skills          projectRoot = nearest ancestor with .git
+#   200  <projectRoot>/.agents/skills
+#   300  Config.customSkillDirs             <- we used this one
+#   400  <dshHome>/skills                   $DSH_HOME or ~/.dsh
+#   500  <agentsHome>/skills                $DSH_AGENTS_HOME or ~/.agents
+#   600  bundled                            Config.bundledSkillDir
+#
+# IMPORTANT precedence caveat: rank only breaks ties WITHIN one registry layer.
+# The skill registry is host + per-scope layered, and the nearest layer wins a
+# duplicate name outright. So a preset-scoped skill beats a global one regardless
+# of rank.
