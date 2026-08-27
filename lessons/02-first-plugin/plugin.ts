@@ -14,6 +14,20 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 
+import Schema from '@deepseek-ai/schemastery'
+
+// 1. Define the TypeScript types for safety
+export interface Config {
+  greeting: string
+  maxRetries: number
+}
+
+// 2. Define the structural schema with fallback defaults
+export const Config: Schema<Config> = Schema.object({
+  greeting: Schema.string().default(''),
+  maxRetries: Schema.number().default(0),
+})
+
 // `name` is metadata only. It is NOT a service name and nothing resolves it —
 // it just makes logs and error messages readable.
 export const name = 'lesson-02-first-plugin'
@@ -27,7 +41,7 @@ export const name = 'lesson-02-first-plugin'
  * console.log because it is what the harness's own plugins use, and it tags
  * output with the plugin it came from.
  */
-export function apply(ctx: Context) {
+export function apply(ctx: Context, config: Config) {
   // Deliberately console.log and not ctx.logger(...).
   //
   // ctx.logger('name') IS the framework logger and is what harness plugins use
@@ -35,6 +49,8 @@ export function apply(ctx: Context) {
   // ctx.logger output goes nowhere you can see. For learning, we want output on
   // the terminal, so this course uses console.log for teaching signals and
   // saves ctx.logger for when you ship something.
+
+  console.log(`[less_02]  config: ${JSON.stringify(config)}`)
   console.log('[lesson-02] hello from my first dsh plugin')
 
   // Proof that this really is a fresh child Context per plugin instance:

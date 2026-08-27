@@ -13,3 +13,6 @@
 - insert:
     - id: lesson-02-first-plugin
       name: '/Users/hanlinchen/Desktop/dsh-custom-plugin/lessons/02-first-plugin/plugin.ts'
+      config:
+        greeting: "Hello from the plugin!"
+        maxRetries: 3

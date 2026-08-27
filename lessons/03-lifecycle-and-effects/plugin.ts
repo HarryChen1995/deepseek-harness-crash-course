@@ -19,6 +19,9 @@ export const name = 'lesson-03-lifecycle'
  * them unwind. In real life this is your plugin: a timer, a watcher, a
  * connection.
  */
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 function leakyThenTidy(ctx: Context) {
   // ctx.effect(execute, label?) runs `execute` IMMEDIATELY. Whatever disposer
   // it returns is bound to this plugin instance (its "fiber") and runs when the
@@ -50,6 +53,16 @@ function leakyThenTidy(ctx: Context) {
   // ctx.on(...) is ALREADY an effect — no wrapper needed, no removeListener to
   // remember. It disappears with the plugin automatically.
   ctx.on('internal/error', () => {})
+
+
+    ctx.effect(() => {
+    console.log('[lesson-03] effect D: acquired')
+    return async () => {
+      console.log('[lesson-03] effect D: starting 500ms async cleanup…')
+      await sleep(500) // Yields execution, letting other disposers interleave
+      console.log('[lesson-03] effect D: finished 500ms async cleanup!')
+    }
+  }, 'lesson-03: effect D')
 }
 
 export async function apply(ctx: Context) {
@@ -80,7 +93,7 @@ export async function apply(ctx: Context) {
   // Disposal unwinds effects in REVERSE registration order: C, then B, then A.
   // await resolves only after all cleanup — including async disposers — is done.
   await fiber.dispose()
-
+  await fiber.dispose()
   console.log('[lesson-03] disposed. fiber.uid is now', fiber.uid, '(null == gone)')
   console.log('[lesson-03] note the interval stopped ticking — that is effect B unwinding.')
 
