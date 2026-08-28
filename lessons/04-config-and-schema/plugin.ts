@@ -20,6 +20,7 @@ import Schema from '@deepseek-ai/schemastery'
 
 export const name = 'lesson-04-config'
 
+
 export interface Config {
   /** What to greet with. */
   greeting: string
@@ -29,6 +30,8 @@ export interface Config {
   mode: 'quiet' | 'loud'
   /** Optional list of names to greet. */
   names: string[]
+
+  customObject: Object
 }
 
 /**
@@ -48,8 +51,9 @@ export interface Config {
 export const Config: Schema<Config> = Schema.object({
   greeting: Schema.string().default('Hello').description('Greeting word to use.'),
   times: Schema.number().step(1).min(1).max(5).default(1).description('Repeat count, 1-5.'),
-  mode: Schema.union(['quiet', 'loud'] as const).default('quiet').description('Output style.'),
+  mode: Schema.union(['quiet', 'loud'] as const).required().default('quiet').description('Output style.'),
   names: Schema.array(String).default(['world']).description('Who to greet.'),
+  customObject: Schema.object( {a: Schema.number().default(1), b: Schema.number().default(1) })
 })
 
 export function apply(ctx: Context, config: Config) {
@@ -60,6 +64,8 @@ export function apply(ctx: Context, config: Config) {
       const line = `${config.greeting}, ${person}!`
       console.log('[lesson-04]', config.mode === 'loud' ? line.toUpperCase() : line)
     }
+
+    console.log(config.customObject)
   }
 
   // Try breaking it: set `times: 99` in cordis.patch.yml and reboot. dsh exits

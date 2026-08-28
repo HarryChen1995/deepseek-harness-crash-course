@@ -12,5 +12,7 @@
       config:
         greeting: 'Hei'
         times: 2
-        mode: loud
+        mode: 'loud'
         names: ['Ada', 'Linus']
+        customObject:
+          a: 3
