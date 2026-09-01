@@ -33,7 +33,7 @@ export const inject = ['tools', 'systemPrompt']
 const GUIDANCE = `
 ## The lesson_temperature tool
 
-Temperatures returned by lesson_temperature are always in CELSIUS, even when the
+Temperatures returned by lesson_temperature are always in {{lesson_unit}}, even when the
 user asked in Fahrenheit. Convert before answering, and say which unit you used.
 
 Call it at most once per city per turn; the value does not change within a turn.
@@ -43,6 +43,8 @@ export function apply(ctx: Context) {
   // section({ name, order, text }) — `name` must be unique within this layer
   // (a duplicate throws). `text` may also be a function of the assemble context
   // if you need it computed, and may contain {{variable}} placeholders.
+  ctx.systemPrompt.variable('lesson_unit', () => 'celsius') 
+
   ctx.systemPrompt.section({
     name: 'lesson:temperature',
     order: 150,
